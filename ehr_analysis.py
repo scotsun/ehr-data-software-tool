@@ -8,7 +8,7 @@ Time complexity to locate a given row's particular variable is O(1).
 from datetime import datetime
 
 
-def parse_data(filename: str) -> dict:
+def parse_data(filename: str) -> dict[str, list[str]]:
     """Parse data from .txt file.
 
     Let the number of variables be p.
@@ -21,20 +21,19 @@ def parse_data(filename: str) -> dict:
     dict[str, list]:a dictionary that variable names as keys and values as lists
 
     """
-    f = open(filename, mode="r", encoding="utf-8-sig")
-    lines = f.readlines()
+    with open(filename, mode="r", encoding="utf-8-sig") as f:
+        lines = f.readlines()
 
-    var_names = lines[0]
-    var_names_list = var_names.strip().split("\t")
-    dataframe: dict[str, list] = {}
-    for var in var_names_list:
-        dataframe[var] = []
+        var_names = lines[0]
+        var_names_list = var_names.strip().split("\t")
+        dataframe: dict[str, list[str]] = {}
+        for var in var_names_list:
+            dataframe[var] = []
 
-    for i in range(1, len(lines)):
-        line_data_list = lines[i].strip().split("\t")
-        for j in range(len(var_names_list)):
-            dataframe[var_names_list[j]].append(line_data_list[j])
-    f.close()
+        for i in range(1, len(lines)):
+            line_data_list = lines[i].strip().split("\t")
+            for j in range(len(var_names_list)):
+                dataframe[var_names_list[j]].append(line_data_list[j])
     return dataframe
 
 
@@ -62,7 +61,7 @@ def num_older_than(age: float, patient_records: dict) -> int:
     return count
 
 
-def sick_patients(lab: str, gt_lt: str, value: float, lab_records: dict) -> list:
+def sick_patients(lab: str, gt_lt: str, value: float, lab_records: dict) -> list[str]:
     """Take the data and return a (unique) list of patients with the condition.
 
     Time complexity is O(N) as a for-loop iterate through the parsed data.
@@ -77,21 +76,21 @@ def sick_patients(lab: str, gt_lt: str, value: float, lab_records: dict) -> list
     int:list of patient IDs
 
     """
-    output: dict[str, bool] = {}
+    output: set[str] = set()
     if gt_lt == ">":
         for i in range(len(lab_records["PatientID"])):
             if (
                 lab_records["LabName"][i] == lab
                 and float(lab_records["LabValue"][i]) > value
             ):
-                output[lab_records["PatientID"][i]] = True
+                output.add(lab_records["PatientID"][i])
     elif gt_lt == "<":
         for i in range(len(lab_records["PatientID"])):
             if (
                 lab_records["LabName"][i] == lab
                 and float(lab_records["LabValue"][i]) < value
             ):
-                output[lab_records["PatientID"][i]] = True
+                output.add(lab_records["PatientID"][i])
     else:
         raise ValueError("incorrect string for gt_lt")
-    return list(output.keys())
+    return list(output)
