@@ -24,6 +24,9 @@ def parse_data(filename: str) -> dict[str, list[str]]:
     with open(filename, mode="r", encoding="utf-8-sig") as f:
         lines = f.readlines()
 
+        if len(lines) == 0:
+            return {}
+
         var_names = lines[0]
         var_names_list = var_names.strip().split("\t")
         dataframe: dict[str, list[str]] = {}
@@ -61,7 +64,7 @@ def num_older_than(age: float, patient_records: dict) -> int:
     return count
 
 
-def sick_patients(lab: str, gt_lt: str, value: float, lab_records: dict) -> list[str]:
+def sick_patients(lab: str, gt_lt: str, value: float, lab_records: dict) -> set[str]:
     """Take the data and return a (unique) list of patients with the condition.
 
     Time complexity is O(N) as a for-loop iterate through the parsed data.
@@ -93,4 +96,4 @@ def sick_patients(lab: str, gt_lt: str, value: float, lab_records: dict) -> list
                 output.add(lab_records["PatientID"][i])
     else:
         raise ValueError("incorrect string for gt_lt")
-    return list(output)
+    return output
