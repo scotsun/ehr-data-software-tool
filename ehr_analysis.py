@@ -7,6 +7,8 @@ Time complexity to locate a given row's particular variable is O(1).
 
 from datetime import datetime
 
+DATE_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
+
 
 def parse_data(filename: str) -> dict[str, list[str]]:
     """Parse data from .txt file.
@@ -57,7 +59,7 @@ def num_older_than(age: float, patient_records: dict) -> int:
     now = datetime.now()
     count = 0
     for i in range(len(patient_dob)):
-        temp = datetime.strptime(patient_dob[i], "%Y-%m-%d %H:%M:%S.%f")
+        temp = datetime.strptime(patient_dob[i], DATE_FORMAT)
         diff = now - temp
         if diff.days / 365.25 > age:
             count += 1
@@ -97,3 +99,52 @@ def sick_patients(lab: str, gt_lt: str, value: float, lab_records: dict) -> set[
     else:
         raise ValueError("incorrect string for gt_lt")
     return output
+
+
+def get_patient_dob(patient_id: str, patient_records: dict) -> str:
+    """Get patient's DOB."""
+    for i in range(len(patient_records["PatientID"])):
+        if patient_records["PatientID"][i] == patient_id:
+            dob = patient_records["PatientDateOfBirth"][i]
+            return dob
+    raise ValueError("patient ID not found.")
+
+
+def get_age_at_first_admission(
+    patient_id: str, lab_records: dict, patient_records: dict
+) -> float:
+    """Calculate the age of a given patient at the first admission (based on the first lab).
+
+    Time complexity is O(N) as a for-loop iterate through the parsed data twice
+
+    Parameter:
+    patient_id (str): Patient ID
+    lab_records (dict): Parsed data
+
+    Returns:
+    int:list of patient IDs
+
+    """
+    # get all the lab dates of the first adimission
+    patient_ids = lab_records["PatientID"]
+    admit_ids = lab_records["AdmissionID"]
+    lab_dates = lab_records["LabDateTime"]
+    nrow = len(patient_ids)
+    idx_list = [
+        i for i in range(nrow) if patient_ids[i] == patient_id and admit_ids[i] == "1"
+    ]
+    if len(idx_list) == 0:
+        raise ValueError("patient ID not found.")
+
+    # get date of the first lab
+    min_date = datetime.strptime(lab_dates[idx_list[0]], DATE_FORMAT)
+    for i in range(1, len(idx_list)):
+        temp = datetime.strptime(lab_dates[idx_list[i]], DATE_FORMAT)
+        if temp < min_date:
+            min_date = temp
+    # get patient dob
+    dob_str = get_patient_dob(patient_id, patient_records)
+    dob = datetime.strptime(dob_str, DATE_FORMAT)
+    diff = min_date - dob
+    age = diff.days / 365.25
+    return age

@@ -1,6 +1,7 @@
 """Test module."""
 
 import sys
+import pytest
 
 sys.path.append("../ehr_data_software_tool")
 if True:
@@ -39,3 +40,20 @@ def test_sick_patients():
     assert ehr.sick_patients("lab2", "<", 0.7, test_lab_data) == set(["1", "2"])
     assert ehr.sick_patients("lab99", "<", 99, test_lab_data) == set()
     return
+
+
+def test_get_age_at_first_admission():
+    """Test get_age_at_first_admission."""
+    test_patient_data = ehr.parse_data("./tests/test_data4.txt")
+    test_lab_data = ehr.parse_data("./tests/test_data5.txt")
+    assert (
+        round(ehr.get_age_at_first_admission("1", test_lab_data, test_patient_data))
+        == 60
+    )
+    assert (
+        round(ehr.get_age_at_first_admission("2", test_lab_data, test_patient_data))
+        == 62
+    )
+    with pytest.raises(ValueError) as excinfo:
+        ehr.get_age_at_first_admission("999", test_lab_data, test_patient_data)
+    assert "patient ID not found." in str(excinfo.value)
