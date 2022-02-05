@@ -41,6 +41,17 @@ it calculates the age of a given patient at the first admission (based on the fi
 {'PatientID': ['1', '1', '1', '2', '2', '3', '3', '4', '5', '5'], 'LabName': ['lab1', 'lab2', 'lab3', 'lab1', 'lab2', 'lab1', 'lab3', 'lab1', 'lab1', 'lab2'], 'LabValue': ['1', '0.5', '10', '2', '0.6', '2', '11', '3', '3', '0.9']}
 ```
 
+## Testing
+Several testing text files and a `test.py` script are created in test folder. To check test results, run either one of the following commands in the terminal after `cd` into the repo folder.
+
+```sh
+pytest ./tests/test.py
+```
+
+```sh
+pytest --cov=ehr_analysis ./tests/test.py
+```
+
 ## Contributing
 
 1. Fork it
