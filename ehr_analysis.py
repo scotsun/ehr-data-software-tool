@@ -67,7 +67,7 @@ def num_older_than(age: float, patient_records: dict) -> int:
 
 
 def sick_patients(lab: str, gt_lt: str, value: float, lab_records: dict) -> set[str]:
-    """Take the data and return a (unique) list of patients with the condition.
+    """Take the data and return a list of unique patients with the specified condition.
 
     Time complexity is O(N) as a for-loop iterate through the parsed data.
 
@@ -113,7 +113,7 @@ def get_patient_dob(patient_id: str, patient_records: dict) -> str:
 def get_age_at_first_admission(
     patient_id: str, lab_records: dict, patient_records: dict
 ) -> float:
-    """Calculate the age of a given patient at the first admission (based on the first lab).
+    """Calculate the age of a given patient at the first admission (based on the first lab date).
 
     Time complexity is O(N) as a for-loop iterate through the parsed data twice
 
