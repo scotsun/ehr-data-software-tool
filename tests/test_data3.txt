@@ -1,0 +1,11 @@
+PatientID	LabName	LabValue
+1	lab1	1
+1	lab2	0.5
+1	lab3	10
+2	lab1	2
+2	lab2	0.6
+3	lab1	2
+3	lab3	11
+4	lab1	3
+5	lab1	3
+5	lab2	0.9
