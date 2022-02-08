@@ -67,6 +67,7 @@ def num_older_than(age: float, patient_records: dict[str, list[str]]) -> int:
 
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 def sick_patients(lab: str, gt_lt: str, value: float, lab_records: dict) -> set[str]:
     """Take the data and return a list of unique patients with the specified condition.
 =======
@@ -75,6 +76,10 @@ def sick_patients(
 ) -> list[str]:
     """Take the data and return a (unique) list of patients with the condition.
 >>>>>>> 1e6175b (Update ehr_analysis.py)
+=======
+def sick_patients(lab: str, gt_lt: str, value: float, lab_records: dict) -> set[str]:
+    """Take the data and return a list of unique patients with the specified condition.
+>>>>>>> 0203555 (complete part2)
 
     Time complexity is O(N) as a for-loop iterate through the parsed data.
 
