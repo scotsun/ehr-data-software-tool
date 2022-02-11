@@ -42,14 +42,14 @@ def parse_data(filename: str) -> dict[str, list[str]]:
     return dataframe
 
 
-def num_older_than(age: float, patient_records: dict) -> int:
+def num_older_than(age: float, patient_records: dict[str, list[str]]) -> int:
     """Take the data and return the number of patients older than a given age.
 
     Time complexity is O(N) as a for-loop iterate through the parsed data.
 
     Parameters:
     age (float): Age of interest
-    patient_records (dict): Parsed data
+    patient_records (dict[str, list[str]]): Parsed data
 
     Returns:
     int:number of patients that fit the condition
@@ -66,8 +66,15 @@ def num_older_than(age: float, patient_records: dict) -> int:
     return count
 
 
+<<<<<<< HEAD
 def sick_patients(lab: str, gt_lt: str, value: float, lab_records: dict) -> set[str]:
     """Take the data and return a list of unique patients with the specified condition.
+=======
+def sick_patients(
+    lab: str, gt_lt: str, value: float, lab_records: dict[str, list[str]]
+) -> list[str]:
+    """Take the data and return a (unique) list of patients with the condition.
+>>>>>>> 1e6175b (Update ehr_analysis.py)
 
     Time complexity is O(N) as a for-loop iterate through the parsed data.
 
