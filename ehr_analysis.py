@@ -37,14 +37,14 @@ def parse_data(filename: str) -> dict[str, list[str]]:
     return dataframe
 
 
-def num_older_than(age: float, patient_records: dict) -> int:
+def num_older_than(age: float, patient_records: dict[str, list[str]]) -> int:
     """Take the data and return the number of patients older than a given age.
 
     Time complexity is O(N) as a for-loop iterate through the parsed data.
 
     Parameters:
     age (float): Age of interest
-    patient_records (dict): Parsed data
+    patient_records (dict[str, list[str]]): Parsed data
 
     Returns:
     int:number of patients that fit the condition
@@ -61,7 +61,9 @@ def num_older_than(age: float, patient_records: dict) -> int:
     return count
 
 
-def sick_patients(lab: str, gt_lt: str, value: float, lab_records: dict) -> list[str]:
+def sick_patients(
+    lab: str, gt_lt: str, value: float, lab_records: dict[str, list[str]]
+) -> list[str]:
     """Take the data and return a (unique) list of patients with the condition.
 
     Time complexity is O(N) as a for-loop iterate through the parsed data.
