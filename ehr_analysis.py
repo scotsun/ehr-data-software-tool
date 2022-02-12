@@ -7,6 +7,8 @@ Time complexity to locate a given row's particular variable is O(1).
 
 from datetime import datetime
 
+DATE_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
+
 
 def parse_data(filename: str) -> dict[str, list[str]]:
     """Parse data from .txt file.
@@ -23,6 +25,9 @@ def parse_data(filename: str) -> dict[str, list[str]]:
     """
     with open(filename, mode="r", encoding="utf-8-sig") as f:
         lines = f.readlines()
+
+        if len(lines) == 0:
+            return {}
 
         var_names = lines[0]
         var_names_list = var_names.strip().split("\t")
@@ -54,7 +59,7 @@ def num_older_than(age: float, patient_records: dict[str, list[str]]) -> int:
     now = datetime.now()
     count = 0
     for i in range(len(patient_dob)):
-        temp = datetime.strptime(patient_dob[i], "%Y-%m-%d %H:%M:%S.%f")
+        temp = datetime.strptime(patient_dob[i], DATE_FORMAT)
         diff = now - temp
         if diff.days / 365.25 > age:
             count += 1
@@ -64,7 +69,7 @@ def num_older_than(age: float, patient_records: dict[str, list[str]]) -> int:
 def sick_patients(
     lab: str, gt_lt: str, value: float, lab_records: dict[str, list[str]]
 ) -> set[str]:
-    """Take the data and return a set of patients with the condition.
+    """Take the data and return a set of unique patients with the specified condition.
 
     Time complexity is O(N) as a for-loop iterate through the parsed data.
 
