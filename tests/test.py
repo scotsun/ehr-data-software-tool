@@ -39,6 +39,9 @@ def test_sick_patients():
     assert ehr.sick_patients("lab1", ">", 1, test_lab_data) == set(["2", "3", "4", "5"])
     assert ehr.sick_patients("lab2", "<", 0.7, test_lab_data) == set(["1", "2"])
     assert ehr.sick_patients("lab99", "<", 99, test_lab_data) == set()
+    with pytest.raises(ValueError) as excinfo:
+        ehr.sick_patients("lab1", ">=", 1.5, test_lab_data) == set(["2", "3", "4", "5"])
+    assert "incorrect string for gt_lt" in str(excinfo.value)
     return
 
 
@@ -56,4 +59,7 @@ def test_get_age_at_first_admission():
     )
     with pytest.raises(ValueError) as excinfo:
         ehr.get_age_at_first_admission("999", test_lab_data, test_patient_data)
-    assert "patient ID not found." in str(excinfo.value)
+    assert "patient ID not found in lab records" in str(excinfo.value)
+    with pytest.raises(ValueError) as excinfo:
+        ehr.get_age_at_first_admission("99", test_lab_data, test_patient_data)
+    assert "patient ID not found in patient records." in str(excinfo.value)
