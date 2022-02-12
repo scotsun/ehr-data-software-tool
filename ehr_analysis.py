@@ -64,7 +64,7 @@ def num_older_than(age: float, patient_records: dict[str, list[str]]) -> int:
 def sick_patients(
     lab: str, gt_lt: str, value: float, lab_records: dict[str, list[str]]
 ) -> set[str]:
-    """Take the data and return a (unique) list of patients with the condition.
+    """Take the data and return a set of patients with the condition.
 
     Time complexity is O(N) as a for-loop iterate through the parsed data.
 
