@@ -109,16 +109,12 @@ def get_age_at_first_admission(
     patient_records: dict[str, list[str]],
 ) -> float:
     """Calculate the age of a given patient at the first admission (based on the first lab date).
-
     Time complexity is O(N) as a for-loop iterate through the parsed data twice
-
     Parameter:
     patient_id (str): Patient ID
     lab_records (dict): Parsed data
-
     Returns:
     int:list of patient IDs
-
     """
     # get all the lab dates of the first adimission
     patient_ids = lab_records["PatientID"]
