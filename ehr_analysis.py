@@ -103,18 +103,29 @@ def sick_patients(
     return output
 
 
+def get_patient_dob(patient_id: str, patient_records: dict) -> str:
+    """Get patient's DOB."""
+    for i in range(len(patient_records["PatientID"])):
+        if patient_records["PatientID"][i] == patient_id:
+            dob = patient_records["PatientDateOfBirth"][i]
+            return dob
+    raise ValueError("patient ID not found.")
+
+
 def get_age_at_first_admission(
-    patient_id: str,
-    lab_records: dict[str, list[str]],
-    patient_records: dict[str, list[str]],
+    patient_id: str, lab_records: dict, patient_records: dict
 ) -> float:
     """Calculate the age of a given patient at the first admission (based on the first lab date).
+
     Time complexity is O(N) as a for-loop iterate through the parsed data twice
+
     Parameter:
     patient_id (str): Patient ID
     lab_records (dict): Parsed data
+
     Returns:
     int:list of patient IDs
+
     """
     # get all the lab dates of the first adimission
     patient_ids = lab_records["PatientID"]
@@ -125,7 +136,8 @@ def get_age_at_first_admission(
         i for i in range(nrow) if patient_ids[i] == patient_id and admit_ids[i] == "1"
     ]
     if len(idx_list) == 0:
-        raise ValueError("patient ID not found in lab records.")
+        raise ValueError("patient ID not found.")
+
     # get date of the first lab
     min_date = datetime.strptime(lab_dates[idx_list[0]], DATE_FORMAT)
     for i in range(1, len(idx_list)):
@@ -133,14 +145,8 @@ def get_age_at_first_admission(
         if temp < min_date:
             min_date = temp
     # get patient dob
-    dob_str = None
-    for i in range(len(patient_records["PatientID"])):
-        if patient_records["PatientID"][i] == patient_id:
-            dob_str = patient_records["PatientDateOfBirth"][i]
-    if dob_str is None:
-        raise ValueError("patient ID not found in patient records.")
+    dob_str = get_patient_dob(patient_id, patient_records)
     dob = datetime.strptime(dob_str, DATE_FORMAT)
-    # calculate the age
     diff = min_date - dob
     age = diff.days / 365.25
     return age
