@@ -66,7 +66,9 @@ def num_older_than(age: float, patient_records: dict[str, list[str]]) -> int:
     return count
 
 
-def sick_patients(lab: str, gt_lt: str, value: float, lab_records: dict) -> set[str]:
+def sick_patients(
+    lab: str, gt_lt: str, value: float, lab_records: dict[str, list[str]]
+) -> set[str]:
     """Take the data and return a list of unique patients with the specified condition.
 
     Time complexity is O(N) as a for-loop iterate through the parsed data.
@@ -101,17 +103,10 @@ def sick_patients(lab: str, gt_lt: str, value: float, lab_records: dict) -> set[
     return output
 
 
-def get_patient_dob(patient_id: str, patient_records: dict) -> str:
-    """Get patient's DOB."""
-    for i in range(len(patient_records["PatientID"])):
-        if patient_records["PatientID"][i] == patient_id:
-            dob = patient_records["PatientDateOfBirth"][i]
-            return dob
-    raise ValueError("patient ID not found.")
-
-
 def get_age_at_first_admission(
-    patient_id: str, lab_records: dict, patient_records: dict
+    patient_id: str,
+    lab_records: dict[str, list[str]],
+    patient_records: dict[str, list[str]],
 ) -> float:
     """Calculate the age of a given patient at the first admission (based on the first lab date).
 
@@ -134,8 +129,7 @@ def get_age_at_first_admission(
         i for i in range(nrow) if patient_ids[i] == patient_id and admit_ids[i] == "1"
     ]
     if len(idx_list) == 0:
-        raise ValueError("patient ID not found.")
-
+        raise ValueError("patient ID not found in lab records.")
     # get date of the first lab
     min_date = datetime.strptime(lab_dates[idx_list[0]], DATE_FORMAT)
     for i in range(1, len(idx_list)):
@@ -143,8 +137,14 @@ def get_age_at_first_admission(
         if temp < min_date:
             min_date = temp
     # get patient dob
-    dob_str = get_patient_dob(patient_id, patient_records)
+    dob_str = None
+    for i in range(len(patient_records["PatientID"])):
+        if patient_records["PatientID"][i] == patient_id:
+            dob_str = patient_records["PatientDateOfBirth"][i]
+    if dob_str is None:
+        raise ValueError("patient ID not found in patient records.")
     dob = datetime.strptime(dob_str, DATE_FORMAT)
+    # calculate the age
     diff = min_date - dob
     age = diff.days / 365.25
     return age
