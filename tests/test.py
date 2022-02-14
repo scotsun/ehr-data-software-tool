@@ -21,7 +21,6 @@ def test_parse_data():
     assert ehr.parse_data("./tests/test_data0.txt") == data0
     assert ehr.parse_data("./tests/test_data1.txt") == data1
     assert ehr.parse_data("./tests/test_data2.txt") == data2
-    return
 
 
 def test_num_older_than():
@@ -30,7 +29,6 @@ def test_num_older_than():
     assert ehr.num_older_than(-999, patient_data) == 100
     assert ehr.num_older_than(1000, patient_data) == 0
     assert ehr.num_older_than(51.2, patient_data) == 77
-    return
 
 
 def test_sick_patients():
@@ -42,7 +40,6 @@ def test_sick_patients():
     with pytest.raises(ValueError) as excinfo:
         ehr.sick_patients("lab1", ">=", 1.5, test_lab_data) == set(["2", "3", "4", "5"])
     assert "incorrect string for gt_lt" in str(excinfo.value)
-    return
 
 
 def test_get_age_at_first_admission():
