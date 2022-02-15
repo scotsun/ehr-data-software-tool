@@ -4,8 +4,7 @@ import sys
 import pytest
 
 sys.path.append("../ehr_data_software_tool")
-if True:
-    import ehr_analysis as ehr
+import ehr_analysis as ehr  # noqa: E402
 
 
 def test_parse_data():
