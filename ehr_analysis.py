@@ -23,6 +23,11 @@ class Lab:
         self._value = value
         self._date = date
 
+    def __str__(self) -> str:
+        """__str__ method."""
+        prime_key = (self._pid, self._aid, self._name)
+        return str(prime_key)
+
 
 class Patient:
     """Patient class."""
@@ -35,16 +40,21 @@ class Patient:
         self._race = race
         self._labs: list[Lab] = []
 
+    def __str__(self) -> str:
+        """__str__ method."""
+        return self._pid
+
+    @property
+    def pid(self) -> str:
+        """Get patient ID."""
+        return self._pid
+
     @property
     def age(self) -> float:
         """Calculate patient's age."""
         now = datetime.now()
         diff = now - self._dob
         return diff.days / 365.25
-
-    def takes_lab(self, lab: Lab) -> None:
-        """Take lab."""
-        self._labs.append(lab)
 
     @property
     def age_at_first_admission(self) -> float:
@@ -58,6 +68,23 @@ class Patient:
         diff = min_labdate - self._dob
         return diff.days / 365.25
 
+    def takes_lab(self, lab: Lab) -> None:
+        """Take lab."""
+        self._labs.append(lab)
+
+    def is_sick(self, lab_name: str, gt_lt: str, value: float) -> bool:
+        """Determine if the patient is sick based on the given criterion."""
+        for lab in self._labs:
+            if gt_lt == ">":
+                if lab._name == lab_name:
+                    return lab._value > value
+            elif gt_lt == "<":
+                if lab._name == lab_name:
+                    return lab._value < value
+            else:
+                raise ValueError("incorrect string for gt_lt")
+        raise ValueError(f"this patient has not take lab {lab_name}")
+
 
 def parse_data(filename: str) -> dict[str, list[str]]:
     """Parse data from .txt file.
@@ -66,10 +93,10 @@ def parse_data(filename: str) -> dict[str, list[str]]:
     If p << N, the computation time complexity is O(N); otherwise, it's O(N**2)
 
     Parameters:
-    filename (str): Description of arg1
+    filename (str): file path
 
     Returns:
-    dict[str, list]:a dictionary that variable names as keys and values as lists
+    dict[str, list]:a dictionary taking variable names as keys and list[str] as values
 
     """
     with open(filename, mode="r", encoding="utf-8-sig") as f:
@@ -89,6 +116,48 @@ def parse_data(filename: str) -> dict[str, list[str]]:
             for j in range(len(var_names_list)):
                 dataframe[var_names_list[j]].append(line_data_list[j])
     return dataframe
+
+
+def get_all_patients(
+    patient_records: dict[str, list[str]], lab_records: dict[str, list[str]]
+) -> dict[str, Patient]:
+    """Re-parse data from the dictionaries.
+
+    Lol.
+
+    Parameters:
+    patient_records (dict[str, list[str]]): patient dict
+    lab_records (dict[str, list[str]): lab dict
+
+    Returns:
+    dict[str, Patient]:a dictionary taking pids as keys and Patient objects as values
+    """
+    num_pats = len(patient_records["PatientID"])
+    patients: dict[str, Patient] = dict()
+    for i in range(num_pats):
+        pid = patient_records["PatientID"][i]
+        patient = Patient(
+            pid=pid,
+            gender=patient_records["PatientGender"][i],
+            dob=datetime.strptime(
+                patient_records["PatientDateOfBirth"][i], DATE_FORMAT
+            ),
+            race=patient_records["PatientRace"][i],
+        )
+        patients[pid] = patient
+
+    num_labs = len(lab_records["PatientID"])
+    for i in range(num_labs):
+        pid = lab_records["PatientID"][i]
+        lab = Lab(
+            pid=pid,
+            aid=lab_records["AdmissionID"][i],
+            name=lab_records["LabName"][i],
+            value=float(lab_records["LabValue"][i]),
+            date=datetime.strptime(lab_records["LabDateTime"][i], DATE_FORMAT),
+        )
+        patients[pid].takes_lab(lab=lab)
+    return patients
 
 
 def num_older_than(age: float, patients: list[Patient]) -> int:
@@ -111,7 +180,9 @@ def num_older_than(age: float, patients: list[Patient]) -> int:
     return count
 
 
-def sick_patients(lab: str, gt_lt: str, value: float, labs: list[Lab]) -> set[str]:
+def sick_patients(
+    lab: str, gt_lt: str, value: float, patients: list[Patient]
+) -> set[str]:
     """Take the data and return a set of unique patients with the specified condition.
 
     Time complexity is O(N) as a for-loop iterate through the parsed data.
@@ -127,16 +198,11 @@ def sick_patients(lab: str, gt_lt: str, value: float, labs: list[Lab]) -> set[st
 
     """
     output: set[str] = set()
-    if gt_lt == ">":
-        for i in range(len(labs)):
-            temp_lab = labs[i]
-            if temp_lab._name == lab and temp_lab._value > value:
-                output.add(temp_lab._pid)
-    elif gt_lt == "<":
-        for i in range(len(labs)):
-            temp_lab = labs[i]
-            if temp_lab._name == lab and temp_lab._value < value:
-                output.add(temp_lab._pid)
-    else:
-        raise ValueError("incorrect string for gt_lt")
+    for patient in patients:
+        try:
+            if patient.is_sick(lab_name=lab, gt_lt=gt_lt, value=value):
+                output.add(patient.pid)
+        except ValueError as e:
+            if "this patient has not take" in e.args[0]:
+                continue
     return output
