@@ -83,7 +83,7 @@ class Patient:
                     return lab._value < value
             else:
                 raise ValueError("incorrect string for gt_lt")
-        raise ValueError(f"this patient has not take lab {lab_name}")
+        raise ValueError(f"this patient has not taken lab {lab_name}")
 
 
 def parse_data(filename: str) -> dict[str, list[str]]:
@@ -174,8 +174,8 @@ def num_older_than(age: float, patients: list[Patient]) -> int:
 
     """
     count = 0
-    for i in range(len(patients)):
-        if patients[i].age > age:
+    for patient in patients:
+        if patient.age > age:
             count += 1
     return count
 
@@ -205,4 +205,6 @@ def sick_patients(
         except ValueError as e:
             if "this patient has not take" in e.args[0]:
                 continue
+            else:
+                raise ValueError("incorrect string for gt_lt")
     return output
