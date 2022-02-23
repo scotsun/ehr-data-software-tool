@@ -50,6 +50,11 @@ class Patient:
         return self._pid
 
     @property
+    def labs(self) -> list[Lab]:
+        """Get labs."""
+        return self._labs
+
+    @property
     def age(self) -> float:
         """Calculate patient's age."""
         now = datetime.now()

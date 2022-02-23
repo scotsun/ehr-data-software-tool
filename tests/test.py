@@ -32,7 +32,7 @@ def test_print():
     """Test __str__ methods for Patient and Lab."""
     assert patients["1"].__str__() == "1"
     assert patients["2"].__str__() == "2"
-    lab1 = patients["1"]._labs[0]
+    lab1 = patients["1"].labs[0]
     assert lab1.__str__() == str((lab1._pid, lab1._aid, lab1._name))
 
 

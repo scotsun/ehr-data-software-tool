@@ -1,7 +1,7 @@
 # EHR Data Analysis Tool
 > A suite of software tools for parsing/searching/analyzing electronic health record (EHR) data
 
-[![prog-status](https://img.shields.io/badge/status-InProgress-<>.svg)](https://shields.io/)
+[![prog-status](https://img.shields.io/badge/status-in%20progress-brightgreen?style=plastic)](https://shields.io/)
 [![made-with-python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg)](https://www.python.org/)
 
 
@@ -15,7 +15,28 @@ git clone https://github.com/scotsun/EHR_data_software_tool.git
 
 ## API Description
 
-Currently, the package has 4 main features.
+Currently, the package has 2 classes and 4 module features.
+
+### Classes
+#### `Patient`  
+it takes attrs: `pid`, `gender`, `dob`, `race`
+
+`age`  
+it is a property calculating the age of a Patient object.
+
+`age_at_first_admission`  
+it is a property calculating the.
+
+`takes_lab`
+it is a class method that put a `Lab` object into `Patient._labs`.
+
+`is_sick`
+it is a class method that check if the patient is sick based on the given criterion.
+
+#### `Lab`
+it takes attrs: `pid`, `aid`, `name`, `value`, `date` 
+
+### Module features
 
 `parse_data(filename: str) -> dict[str, list[str]]`:  
 it parses the data from any *.txt file with delimiter as `\t`.
@@ -25,11 +46,6 @@ it takes the data and return the number of patients older than a given age.
 
 `sick_patients(lab: str, gt_lt: str, value: float, lab_records: dict) -> set[str]`:  
 it takes the data and return a list of unique patients with the specified condition.
-
-`get_age_at_first_admission(
-	patient_id: str, lab_records: dict, patient_records: dict
-) -> float`:  
-it calculates the age of a given patient at the first admission (based on the first lab date)
 
 
 ## Usage example
