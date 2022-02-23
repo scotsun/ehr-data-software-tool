@@ -78,4 +78,4 @@ def test_age_at_first_admission():
     assert round(patients["3"].age_at_first_admission) == 22
     with pytest.raises(AttributeError) as excinfo:
         patients["99"].age_at_first_admission
-    assert "this patient has not taken any lab yet" in str(excinfo.value)
+    assert "has not taken any lab yet" in str(excinfo.value)

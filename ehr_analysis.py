@@ -3,6 +3,8 @@
 Data structure chosen for data parsing is dict[str, list]
 Time complexity to locate a row is O(N).
 Time complexity to locate a given row's particular variable is O(1).
+
+Assume N patients and M labs per patient on average.
 """
 
 from datetime import datetime
@@ -11,7 +13,7 @@ DATE_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
 
 
 class Lab:
-    """Lab class."""
+    """Lab class that takes patient ID, admission ID, lab name, lab value, and lab date."""
 
     def __init__(
         self, pid: str, aid: str, name: str, value: float, date: datetime
@@ -30,7 +32,7 @@ class Lab:
 
 
 class Patient:
-    """Patient class."""
+    """Patient class that takes patient ID, gender, DOB, and race."""
 
     def __init__(self, pid: str, gender: str, dob: datetime, race: str) -> None:
         """Initialize."""
@@ -63,9 +65,9 @@ class Patient:
 
     @property
     def age_at_first_admission(self) -> float:
-        """Get the age at 1st admission."""
+        """Get the age at 1st admission. Time complexity O(M)."""
         if len(self._labs) == 0:
-            raise AttributeError("this patient has not taken any lab yet.")
+            raise AttributeError(f"Patient {self.pid} has not taken any lab yet.")
         min_labdate = self._labs[0]._date
         for lab in self._labs:
             if lab._aid == "1" and lab._date < min_labdate:
@@ -74,11 +76,11 @@ class Patient:
         return diff.days / 365.25
 
     def takes_lab(self, lab: Lab) -> None:
-        """Take lab."""
+        """Append the lab object into Patient._lab. Time complexity O(1)."""
         self._labs.append(lab)
 
     def is_sick(self, lab_name: str, gt_lt: str, value: float) -> bool:
-        """Determine if the patient is sick based on the given criterion."""
+        """Determine if the patient is sick based on the given criterion. Time complexity O(M)."""
         for lab in self._labs:
             if gt_lt == ">":
                 if lab._name == lab_name:
@@ -87,7 +89,7 @@ class Patient:
                 if lab._name == lab_name:
                     return lab._value < value
             else:
-                raise ValueError("incorrect string for gt_lt")
+                raise ValueError(f"incorrect string for gt_lt: {gt_lt}")
         raise ValueError(f"this patient has not taken lab {lab_name}")
 
 
@@ -126,9 +128,9 @@ def parse_data(filename: str) -> dict[str, list[str]]:
 def get_all_patients(
     patient_records: dict[str, list[str]], lab_records: dict[str, list[str]]
 ) -> dict[str, Patient]:
-    """Re-parse data from the dictionaries.
+    """Re-parse data from the dictionaries into Lab and Patient objects.
 
-    Lol.
+    Time complexity O(N + M*N)
 
     Parameters:
     patient_records (dict[str, list[str]]): patient dict
@@ -149,7 +151,7 @@ def get_all_patients(
             ),
             race=patient_records["PatientRace"][i],
         )
-        patients[pid] = patient
+        patients[pid] = patient  # O(1)
 
     num_labs = len(lab_records["PatientID"])
     for i in range(num_labs):
@@ -161,14 +163,14 @@ def get_all_patients(
             value=float(lab_records["LabValue"][i]),
             date=datetime.strptime(lab_records["LabDateTime"][i], DATE_FORMAT),
         )
-        patients[pid].takes_lab(lab=lab)
+        patients[pid].takes_lab(lab=lab)  # O(1)
     return patients
 
 
 def num_older_than(age: float, patients: list[Patient]) -> int:
     """Take the data and return the number of patients older than a given age.
 
-    Time complexity is O(N) as a for-loop iterate through the parsed data.
+    Time complexity is O(N) for iterating through all patients.
 
     Parameters:
     age (float): Age of interest
@@ -180,7 +182,7 @@ def num_older_than(age: float, patients: list[Patient]) -> int:
     """
     count = 0
     for patient in patients:
-        if patient.age > age:
+        if patient.age > age:  # O(1)
             count += 1
     return count
 
@@ -190,7 +192,7 @@ def sick_patients(
 ) -> set[str]:
     """Take the data and return a set of unique patients with the specified condition.
 
-    Time complexity is O(N) as a for-loop iterate through the parsed data.
+    Time complexity is O(M*N) for iterating through all patients.
 
     Parameters:
     lab (str): Lab name
@@ -205,11 +207,11 @@ def sick_patients(
     output: set[str] = set()
     for patient in patients:
         try:
-            if patient.is_sick(lab_name=lab, gt_lt=gt_lt, value=value):
+            if patient.is_sick(lab_name=lab, gt_lt=gt_lt, value=value):  # O(M)
                 output.add(patient.pid)
         except ValueError as e:
             if "this patient has not take" in e.args[0]:
                 continue
             else:
-                raise ValueError("incorrect string for gt_lt")
+                raise ValueError(f"incorrect string for gt_lt: {gt_lt}")
     return output
