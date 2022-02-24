@@ -30,6 +30,21 @@ class Lab:
         prime_key = (self._pid, self._aid, self._name)
         return str(prime_key)
 
+    @property
+    def pid(self) -> str:
+        """Get patient ID."""
+        return self._pid
+
+    @property
+    def aid(self) -> str:
+        """Get patient ID."""
+        return self._aid
+
+    @property
+    def name(self) -> str:
+        """Get patient ID."""
+        return self._name
+
 
 class Patient:
     """Patient class that takes patient ID, gender, DOB, and race."""
@@ -77,6 +92,8 @@ class Patient:
 
     def takes_lab(self, lab: Lab) -> None:
         """Append the lab object into Patient._lab. Time complexity O(1)."""
+        if self.pid != lab.pid:
+            raise ValueError(f"Lab {str(lab)} does not match patient {self.pid}.")
         self._labs.append(lab)
 
     def is_sick(self, lab_name: str, gt_lt: str, value: float) -> bool:
@@ -90,7 +107,7 @@ class Patient:
                     return lab._value < value
             else:
                 raise ValueError(f"incorrect string for gt_lt: {gt_lt}")
-        raise ValueError(f"this patient has not taken lab {lab_name}")
+        raise AttributeError(f"this patient has not taken lab {lab_name}")
 
 
 def parse_data(filename: str) -> dict[str, list[str]]:
@@ -209,9 +226,7 @@ def sick_patients(
         try:
             if patient.is_sick(lab_name=lab, gt_lt=gt_lt, value=value):  # O(M)
                 output.add(patient.pid)
-        except ValueError as e:
+        except AttributeError as e:
             if "this patient has not take" in e.args[0]:
                 continue
-            else:
-                raise ValueError(f"incorrect string for gt_lt: {gt_lt}")
     return output
