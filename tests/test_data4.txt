@@ -1,3 +1,7 @@
-PatientID	PatientDateOfBirth
-1	1947-12-28 02:45:40.547
-2	1960-01-20 04:35:40.547
+PatientID	PatientDateOfBirth	PatientGender	PatientRace
+1	1947-12-28 02:45:40.547	Male	White
+2	1960-01-20 04:35:40.547	Female	African American
+3	2000-02-13 04:35:40.547	Male	White
+4	2008-07-25 04:35:40.547	Male	Asian
+5	2008-07-25 04:35:40.547	Male	White
+99	2020-01-01 04:35:40.547	Male	White
