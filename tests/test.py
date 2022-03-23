@@ -11,22 +11,37 @@ from ehr_analysis import Patient, Lab
 
 # assume we already have the following data
 # patients = [
-#     (1, "male", "1947-12-28 02:45:40.547", "white"),
-#     (2, "female", "1960-01-20 04:35:40.547", "african american"),
-#     (3, "male", "2000-02-13 04:35:40.547", "white"),
-#     (99, "female", "2020-02-23 04:35:40.547", "asian"),
+#     (1,   "male",     "1947-12-28 02:45:40.547",  "white"),
+#     (2,   "female",   "1960-01-20 04:35:40.547",  "african american"),
+#     (3,   "male",     "2000-02-13 04:35:40.547",  "white"),
+#     (99,  "female",   "2020-02-23 04:35:40.547",  "asian"),
 # ]
 # labs = [
-#     (1, 1, "lab_a", 1, "2007-12-30 02:45:40.547"),
-#     (1, 1, "lab_b", 0.5, "2007-12-30 02:45:40.547"),
-#     (1, 1, "lab_c", 10, "2021-12-01 02:45:40.547"),
-#     (2, 1, "lab_a", 2, "2022-01-20 04:35:40.547"),
-#     (2, 1, "lab_b", 0.6, "2022-01-20 04:35:40.547"),
-#     (3, 1, "lab_a", 2, "2022-02-14 04:35:40.547"),
+#     (1, 1, "lab_a", 1,    "2007-12-30 02:45:40.547"),
+#     (1, 1, "lab_b", 0.5,  "2007-12-30 02:45:40.547"),
+#     (1, 1, "lab_c", 10,   "2021-12-01 02:45:40.547"),
+#     (2, 1, "lab_a", 2,    "2022-01-20 04:35:40.547"),
+#     (2, 1, "lab_b", 0.6,  "2022-01-20 04:35:40.547"),
+#     (3, 1, "lab_a", 2,    "2022-02-14 04:35:40.547"),
 # ]
 
 conn = sqlite3.connect("ehr.db")
 c = conn.cursor()
+
+
+def test_parse_data():
+    """Test parse_data function."""
+    data0 = {}
+    data1 = {
+        "var0": ["0", "1"],
+        "var1": ["True", "False"],
+        "var2": ["False", "True"],
+        "var3": ["True", "True"],
+    }
+    data2 = {"var0": [], "var1": [], "var2": [], "var3": []}
+    assert ehr.parse_data("./tests/test_data0.txt") == data0
+    assert ehr.parse_data("./tests/test_data1.txt") == data1
+    assert ehr.parse_data("./tests/test_data2.txt") == data2
 
 
 def test_age():
@@ -34,6 +49,9 @@ def test_age():
     assert round(Patient().age(c, 1)) == 74
     assert round(Patient().age(c, 2)) == 62
     assert round(Patient().age(c, 3)) == 22
+    with pytest.raises(ValueError) as excinfo:
+        Patient().age(c, 4)
+    assert "not found" in str(excinfo.value)
 
 
 def test_num_older_than():
