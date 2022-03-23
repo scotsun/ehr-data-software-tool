@@ -1,13 +1,14 @@
 """2022-01-28 Scott Sun.
 
-Data structure chosen for data parsing is dict[str, list]
-Time complexity to locate a row is O(N).
-Time complexity to locate a given row's particular variable is O(1).
-
 Assume N patients and M labs per patient on average.
 """
 
+from cmath import pi
 from datetime import datetime
+from sqlite3 import Cursor
+
+from black import diff
+
 
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
 
@@ -15,99 +16,72 @@ DATE_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
 class Lab:
     """Lab class that takes patient ID, admission ID, lab name, lab value, and lab date."""
 
-    def __init__(
-        self, pid: str, aid: str, name: str, value: float, date: datetime
+    def insert_lab(
+        self, c: Cursor, pid: int, aid: int, name: str, value: float, date: str
     ) -> None:
-        """Initialize."""
-        self._pid = pid
-        self._aid = aid
-        self._name = name
-        self._value = value
-        self._date = date
-
-    def __str__(self) -> str:
-        """__str__ method."""
-        prime_key = (self._pid, self._aid, self._name)
-        return str(prime_key)
-
-    @property
-    def pid(self) -> str:
-        """Get patient ID."""
-        return self._pid
-
-    @property
-    def aid(self) -> str:
-        """Get patient ID."""
-        return self._aid
-
-    @property
-    def name(self) -> str:
-        """Get patient ID."""
-        return self._name
+        """Insert lab into the labs table."""
+        query = """
+        insert into labs (pid, aid, name, value, date)
+        values (?, ?, ?, ?, ?)
+        """
+        c.execute(query, (pid, aid, name, value, date))
 
 
 class Patient:
     """Patient class that takes patient ID, gender, DOB, and race."""
 
-    def __init__(self, pid: str, gender: str, dob: datetime, race: str) -> None:
-        """Initialize."""
-        self._pid = pid
-        self._gender = gender
-        self._dob = dob
-        self._race = race
-        self._labs: list[Lab] = []
+    def insert_patient(
+        self, c: Cursor, pid: int, gender: str, dob: datetime, race: str
+    ) -> None:
+        """Insert patient into the patients table."""
+        query = """
+        insert into patients
+        values (?, ?, ?, ?)
+        """
+        c.execute(query, (pid, gender, dob, race))
 
-    def __str__(self) -> str:
-        """__str__ method."""
-        return self._pid
-
-    @property
-    def pid(self) -> str:
-        """Get patient ID."""
-        return self._pid
-
-    @property
-    def labs(self) -> list[Lab]:
-        """Get labs."""
-        return self._labs
-
-    @property
-    def age(self) -> float:
+    def age(self, c: Cursor, pid: int) -> float:
         """Calculate patient's age."""
+        query = f"select dob from patients where pid = {pid}"
+        c.execute(query)  # TODO: patient not existing
+        try:
+            dob = datetime.strptime(c.fetchone()[0], DATE_FORMAT)
+        except TypeError as e:
+            raise ValueError(f"pid {pid} not found.")
         now = datetime.now()
-        diff = now - self._dob
+        diff = now - dob
         return diff.days / 365.25
 
-    @property
-    def age_at_first_admission(self) -> float:
+    def age_at_first_admission(self, c: Cursor, pid: int) -> float:
         """Get the age at 1st admission. Time complexity O(M)."""
-        if len(self._labs) == 0:
-            raise AttributeError(f"Patient {self.pid} has not taken any lab yet.")
-        min_labdate = self._labs[0]._date
-        for lab in self._labs:
-            if lab._aid == "1" and lab._date < min_labdate:
-                min_labdate = lab._date
-        diff = min_labdate - self._dob
+        query = f"select date from labs where pid = {pid} and aid = 1"
+        c.execute(query)
+        lab_dates = [datetime.strptime(elem[0], DATE_FORMAT) for elem in c.fetchall()]
+        if len(lab_dates) == 0:
+            raise AttributeError(f"Patient {pid} has not taken any lab yet.")
+        min_labdate = min(lab_dates)
+        now = datetime.now()
+        diff = now - min_labdate
         return diff.days / 365.25
 
-    def takes_lab(self, lab: Lab) -> None:
-        """Append the lab object into Patient._lab. Time complexity O(1)."""
-        if self.pid != lab.pid:
-            raise ValueError(f"Lab {str(lab)} does not match patient {self.pid}.")
-        self._labs.append(lab)
-
-    def is_sick(self, lab_name: str, gt_lt: str, value: float) -> bool:
+    def is_sick(
+        self, c: Cursor, pid: int, aid: int, lab_name: str, gt_lt: str, value: float
+    ) -> bool:
         """Determine if the patient is sick based on the given criterion. Time complexity O(M)."""
-        for lab in self._labs:
-            if gt_lt == ">":
-                if lab._name == lab_name:
-                    return lab._value > value
-            elif gt_lt == "<":
-                if lab._name == lab_name:
-                    return lab._value < value
-            else:
-                raise ValueError(f"incorrect string for gt_lt: {gt_lt}")
-        raise AttributeError(f"this patient has not taken lab {lab_name}")
+        query = f"""select value from labs
+        where pid = ? and aid = ? and name = ?
+        """
+        c.execute(query, (pid, aid, lab_name))
+        try:
+            lab_value = c.fetchone()[0]
+        except TypeError as e:
+            raise AttributeError(f"this patient has not taken")
+        if gt_lt == ">":
+            return lab_value > value
+        elif gt_lt == "<":
+            return lab_value < value
+        else:
+            raise ValueError(f"incorrect string for gt_lt: {gt_lt}")
 
 
 def parse_data(filename: str) -> dict[str, list[str]]:
@@ -142,49 +116,7 @@ def parse_data(filename: str) -> dict[str, list[str]]:
     return dataframe
 
 
-def get_all_patients(
-    patient_records: dict[str, list[str]], lab_records: dict[str, list[str]]
-) -> dict[str, Patient]:
-    """Re-parse data from the dictionaries into Lab and Patient objects.
-
-    Time complexity O(N + M*N)
-
-    Parameters:
-    patient_records (dict[str, list[str]]): patient dict
-    lab_records (dict[str, list[str]): lab dict
-
-    Returns:
-    dict[str, Patient]:a dictionary taking pids as keys and Patient objects as values
-    """
-    num_pats = len(patient_records["PatientID"])
-    patients: dict[str, Patient] = dict()
-    for i in range(num_pats):
-        pid = patient_records["PatientID"][i]
-        patient = Patient(
-            pid=pid,
-            gender=patient_records["PatientGender"][i],
-            dob=datetime.strptime(
-                patient_records["PatientDateOfBirth"][i], DATE_FORMAT
-            ),
-            race=patient_records["PatientRace"][i],
-        )
-        patients[pid] = patient  # O(1)
-
-    num_labs = len(lab_records["PatientID"])
-    for i in range(num_labs):
-        pid = lab_records["PatientID"][i]
-        lab = Lab(
-            pid=pid,
-            aid=lab_records["AdmissionID"][i],
-            name=lab_records["LabName"][i],
-            value=float(lab_records["LabValue"][i]),
-            date=datetime.strptime(lab_records["LabDateTime"][i], DATE_FORMAT),
-        )
-        patients[pid].takes_lab(lab=lab)  # O(1)
-    return patients
-
-
-def num_older_than(age: float, patients: list[Patient]) -> int:
+def num_older_than(c: Cursor, age: float) -> int:
     """Take the data and return the number of patients older than a given age.
 
     Time complexity is O(N) for iterating through all patients.
@@ -197,16 +129,17 @@ def num_older_than(age: float, patients: list[Patient]) -> int:
     int:number of patients that fit the condition
 
     """
+    query = "select pid from patients"
+    c.execute(query)
+    pids = [elem[0] for elem in c.fetchall()]
     count = 0
-    for patient in patients:
-        if patient.age > age:  # O(1)
+    for pid in pids:
+        if Patient().age(c, pid) > age:  # O(1)
             count += 1
     return count
 
 
-def sick_patients(
-    lab: str, gt_lt: str, value: float, patients: list[Patient]
-) -> set[str]:
+def sick_patients(c: Cursor, aid: int, lab: str, gt_lt: str, value: float) -> set[int]:
     """Take the data and return a set of unique patients with the specified condition.
 
     Time complexity is O(M*N) for iterating through all patients.
@@ -221,12 +154,12 @@ def sick_patients(
     int:list of patient IDs
 
     """
-    output: set[str] = set()
-    for patient in patients:
-        try:
-            if patient.is_sick(lab_name=lab, gt_lt=gt_lt, value=value):  # O(M)
-                output.add(patient.pid)
-        except AttributeError as e:
-            if "this patient has not take" in e.args[0]:
-                continue
+    output: set[int] = set()
+
+    query = "select pid from patients"
+    c.execute(query)
+    pids = [elem[0] for elem in c.fetchall()]
+    for pid in pids:
+        if Patient().is_sick(c, pid, aid, lab, gt_lt, value):  # O(M)
+            output.add(pid)
     return output
