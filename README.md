@@ -20,14 +20,15 @@ Currently, the package has 2 classes and 4 module features.
 ## Setting up SQLite DB
 ```sh
 sqlite> create table if not exists patients(
-			[pid] integer primary key,
+			[_pid] integer primary key autoincrement,
+			[pid] text not null unique,
 			[gender] text,
     		[dob] text not null,
     		[race] text
 		)
 
 sqlite> create table if not exists labs(
-		[lid] integer primary key autoincrement,
+		[_lid] integer primary key autoincrement,
 		[pid] integer not null,
 		[aid] integer not null,
 		[name] text not null,

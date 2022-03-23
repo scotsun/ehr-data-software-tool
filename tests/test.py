@@ -77,7 +77,7 @@ def test_is_sick():
 
 def test_sick_patients():
     """Test sick_patients."""
-    assert ehr.sick_patients(c=c, aid=1, lab="lab_a", gt_lt=">", value=1) == {2, 3}
+    assert ehr.sick_patients(c=c, aid=1, lab="lab_a", gt_lt=">", value=1) == {"2", "3"}
     assert ehr.sick_patients(c=c, aid=1, lab="lab_z", gt_lt=">", value=0) == set()
     with pytest.raises(ValueError) as excinfo:
         ehr.sick_patients(c=c, aid=1, lab="lab_a", gt_lt=">=", value=1)

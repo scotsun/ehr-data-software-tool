@@ -31,34 +31,34 @@ class Patient:
     """Patient class that takes patient ID, gender, DOB, and race."""
 
     def insert_patient(
-        self, c: Cursor, pid: int, gender: str, dob: datetime, race: str
+        self, c: Cursor, pid: str, gender: str, dob: datetime, race: str
     ) -> None:
         """Insert patient into the patients table."""
         query = """
-        insert into patients
+        insert into patients (pid, gender, dob, race)
         values (?, ?, ?, ?)
         """
         c.execute(query, (pid, gender, dob, race))
 
-    def dob(self, c: Cursor, pid: int) -> datetime:
+    def dob(self, c: Cursor, pid: str) -> datetime:
         """Get patient's dob."""
-        query = f"select dob from patients where pid = {pid}"
-        c.execute(query)  # TODO: patient not existing
+        query = f"select dob from patients where pid = '{pid}'"
+        c.execute(query)
         try:
             return datetime.strptime(c.fetchone()[0], DATE_FORMAT)
         except TypeError as e:
             raise ValueError(f"pid {pid} not found.")
 
-    def age(self, c: Cursor, pid: int) -> float:
+    def age(self, c: Cursor, pid: str) -> float:
         """Calculate patient's age."""
         dob = self.dob(c=c, pid=pid)
         now = datetime.now()
         diff = now - dob
         return diff.days / 365.25
 
-    def age_at_first_admission(self, c: Cursor, pid: int) -> float:
+    def age_at_first_admission(self, c: Cursor, pid: str) -> float:
         """Get the age at 1st admission. Time complexity O(M)."""
-        query = f"select date from labs where pid = {pid} and aid = 1"
+        query = f"select date from labs where pid = '{pid}' and aid = 1"
         c.execute(query)
         lab_dates = [datetime.strptime(elem[0], DATE_FORMAT) for elem in c.fetchall()]
         if len(lab_dates) == 0:
@@ -69,7 +69,7 @@ class Patient:
         return diff.days / 365.25
 
     def is_sick(
-        self, c: Cursor, pid: int, aid: int, lab_name: str, gt_lt: str, value: float
+        self, c: Cursor, pid: str, aid: int, lab_name: str, gt_lt: str, value: float
     ) -> bool:
         """Determine if the patient is sick based on the given criterion. Time complexity O(M)."""
         query = f"""select value from labs
@@ -143,7 +143,7 @@ def num_older_than(c: Cursor, age: float) -> int:
     return count
 
 
-def sick_patients(c: Cursor, aid: int, lab: str, gt_lt: str, value: float) -> set[int]:
+def sick_patients(c: Cursor, aid: int, lab: str, gt_lt: str, value: float) -> set[str]:
     """Take the data and return a set of unique patients with the specified condition.
 
     Time complexity is O(M*N) for iterating through all patients.
@@ -158,7 +158,7 @@ def sick_patients(c: Cursor, aid: int, lab: str, gt_lt: str, value: float) -> se
     int:list of patient IDs
 
     """
-    output: set[int] = set()
+    output: set[str] = set()
 
     query = "select pid from patients"
     c.execute(query)
