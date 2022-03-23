@@ -40,14 +40,18 @@ class Patient:
         """
         c.execute(query, (pid, gender, dob, race))
 
-    def age(self, c: Cursor, pid: int) -> float:
-        """Calculate patient's age."""
+    def dob(self, c: Cursor, pid: int) -> datetime:
+        """Get patient's dob."""
         query = f"select dob from patients where pid = {pid}"
         c.execute(query)  # TODO: patient not existing
         try:
-            dob = datetime.strptime(c.fetchone()[0], DATE_FORMAT)
+            return datetime.strptime(c.fetchone()[0], DATE_FORMAT)
         except TypeError as e:
             raise ValueError(f"pid {pid} not found.")
+
+    def age(self, c: Cursor, pid: int) -> float:
+        """Calculate patient's age."""
+        dob = self.dob(c=c, pid=pid)
         now = datetime.now()
         diff = now - dob
         return diff.days / 365.25
@@ -60,8 +64,8 @@ class Patient:
         if len(lab_dates) == 0:
             raise AttributeError(f"Patient {pid} has not taken any lab yet.")
         min_labdate = min(lab_dates)
-        now = datetime.now()
-        diff = now - min_labdate
+        dob = self.dob(c=c, pid=pid)
+        diff = min_labdate - dob
         return diff.days / 365.25
 
     def is_sick(
@@ -160,6 +164,9 @@ def sick_patients(c: Cursor, aid: int, lab: str, gt_lt: str, value: float) -> se
     c.execute(query)
     pids = [elem[0] for elem in c.fetchall()]
     for pid in pids:
-        if Patient().is_sick(c, pid, aid, lab, gt_lt, value):  # O(M)
-            output.add(pid)
+        try:
+            if Patient().is_sick(c, pid, aid, lab, gt_lt, value):  # O(M)
+                output.add(pid)
+        except AttributeError as e:
+            continue
     return output

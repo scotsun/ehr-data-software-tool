@@ -57,20 +57,20 @@ def test_is_sick():
     assert "this patient has not taken" in str(excinfo.value)
 
 
-# def test_sick_patients():
-#     """Test sick_patients."""
-#     assert ehr.sick_patients("lab_a", ">", 1, patients_list) == {"2", "3"}
-#     assert ehr.sick_patients("lab_z", ">", 0, patients_list) == set()
-#     with pytest.raises(ValueError) as excinfo:
-#         ehr.sick_patients("lab_a", ">=", 1, patients_list)
-#     assert "incorrect string for gt_lt" in str(excinfo.value)
+def test_sick_patients():
+    """Test sick_patients."""
+    assert ehr.sick_patients(c=c, aid=1, lab="lab_a", gt_lt=">", value=1) == {2, 3}
+    assert ehr.sick_patients(c=c, aid=1, lab="lab_z", gt_lt=">", value=0) == set()
+    with pytest.raises(ValueError) as excinfo:
+        ehr.sick_patients(c=c, aid=1, lab="lab_a", gt_lt=">=", value=1)
+    assert "incorrect string for gt_lt" in str(excinfo.value)
 
 
-# def test_age_at_first_admission():
-#     """Test get_age_at_first_admission."""
-#     assert round(patients["1"].age_at_first_admission) == 60
-#     assert round(patients["2"].age_at_first_admission) == 62
-#     assert round(patients["3"].age_at_first_admission) == 22
-#     with pytest.raises(AttributeError) as excinfo:
-#         patients["99"].age_at_first_admission
-#     assert "has not taken any lab yet" in str(excinfo.value)
+def test_age_at_first_admission():
+    """Test get_age_at_first_admission."""
+    assert round(Patient().age_at_first_admission(c, 1)) == 60
+    assert round(Patient().age_at_first_admission(c, 2)) == 62
+    assert round(Patient().age_at_first_admission(c, 3)) == 22
+    with pytest.raises(AttributeError) as excinfo:
+        Patient().age_at_first_admission(c, 99)
+    assert "has not taken any lab yet" in str(excinfo.value)
