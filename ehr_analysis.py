@@ -3,55 +3,57 @@
 Assume N patients and M labs per patient on average.
 """
 
-from cmath import pi
 from datetime import datetime
+import sqlite3
 from sqlite3 import Cursor
-
-from black import diff
 
 
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
+conn = sqlite3.connect("ehr.db")
+c = conn.cursor()
 
 
 class Lab:
     """Lab class that takes patient ID, admission ID, lab name, lab value, and lab date."""
 
-    def insert_lab(
-        self, c: Cursor, pid: int, aid: int, name: str, value: float, date: str
-    ) -> None:
-        """Insert lab into the labs table."""
-        query = """
-        insert into labs (pid, aid, name, value, date)
-        values (?, ?, ?, ?, ?)
-        """
-        c.execute(query, (pid, aid, name, value, date))
+    __cursor = c
+
+    def __init__(self, pid: int, aid: int, name: str, value: float, date: str) -> None:
+        """Initialize a lab by inserting a row into the labs table."""
+        query = "insert into labs (pid, aid, name, value, date) values (?, ?, ?, ?, ?)"
+        self.__cursor.execute(query, (pid, aid, name, value, date))
 
 
 class Patient:
     """Patient class that takes patient ID, gender, DOB, and race."""
 
-    def insert_patient(
-        self, c: Cursor, pid: str, gender: str, dob: datetime, race: str
-    ) -> None:
-        """Insert patient into the patients table."""
-        query = """
-        insert into patients (pid, gender, dob, race)
-        values (?, ?, ?, ?)
-        """
-        c.execute(query, (pid, gender, dob, race))
+    __cursor = c
 
-    def dob(self, c: Cursor, pid: str) -> datetime:
+    def __init__(self, pid: str, gender: str, dob: datetime, race: str) -> None:
+        """Initialize a patient by inserting a row into the patients table."""
+        self._pid = pid
+        query = "insert into patients (pid, gender, dob, race) values (?, ?, ?, ?)"
+        self.__cursor.execute(query, (pid, gender, dob, race))
+
+    @property
+    def pid(self) -> str:
+        """Getter of Patient.pid."""
+        return self._pid
+
+    @property
+    def dob(self) -> datetime:
         """Get patient's dob."""
-        query = f"select dob from patients where pid = '{pid}'"
-        c.execute(query)
+        query = f"select dob from patients where pid = '{self._pid}'"
+        self.__cursor.execute(query)
         try:
             return datetime.strptime(c.fetchone()[0], DATE_FORMAT)
         except TypeError as e:
-            raise ValueError(f"pid {pid} not found.")
+            raise ValueError(f"pid {self._pid} not found.")
 
-    def age(self, c: Cursor, pid: str) -> float:
+    @property
+    def age(self) -> float:
         """Calculate patient's age."""
-        dob = self.dob(c=c, pid=pid)
+        dob = self.dob
         now = datetime.now()
         diff = now - dob
         return diff.days / 365.25
@@ -64,18 +66,16 @@ class Patient:
         if len(lab_dates) == 0:
             raise AttributeError(f"Patient {pid} has not taken any lab yet.")
         min_labdate = min(lab_dates)
-        dob = self.dob(c=c, pid=pid)
+        dob = self.dob
         diff = min_labdate - dob
         return diff.days / 365.25
 
-    def is_sick(
-        self, c: Cursor, pid: str, aid: int, lab_name: str, gt_lt: str, value: float
-    ) -> bool:
+    def is_sick(self, aid: int, lab_name: str, gt_lt: str, value: float) -> bool:
         """Determine if the patient is sick based on the given criterion. Time complexity O(M)."""
         query = f"""select value from labs
         where pid = ? and aid = ? and name = ?
         """
-        c.execute(query, (pid, aid, lab_name))
+        self.__cursor.execute(query, (self._pid, aid, lab_name))
         try:
             lab_value = c.fetchone()[0]
         except TypeError as e:
@@ -120,7 +120,7 @@ def parse_data(filename: str) -> dict[str, list[str]]:
     return dataframe
 
 
-def num_older_than(c: Cursor, age: float) -> int:
+def num_older_than(pateints: list[Patient], age: float) -> int:
     """Take the data and return the number of patients older than a given age.
 
     Time complexity is O(N) for iterating through all patients.
@@ -133,17 +133,16 @@ def num_older_than(c: Cursor, age: float) -> int:
     int:number of patients that fit the condition
 
     """
-    query = "select pid from patients"
-    c.execute(query)
-    pids = [elem[0] for elem in c.fetchall()]
     count = 0
-    for pid in pids:
-        if Patient().age(c, pid) > age:  # O(1)
+    for p in pateints:
+        if p.age > age:  # O(1)
             count += 1
     return count
 
 
-def sick_patients(c: Cursor, aid: int, lab: str, gt_lt: str, value: float) -> set[str]:
+def sick_patients(
+    patients: list[Patient], aid: int, lab: str, gt_lt: str, value: float
+) -> set[str]:
     """Take the data and return a set of unique patients with the specified condition.
 
     Time complexity is O(M*N) for iterating through all patients.
@@ -159,14 +158,10 @@ def sick_patients(c: Cursor, aid: int, lab: str, gt_lt: str, value: float) -> se
 
     """
     output: set[str] = set()
-
-    query = "select pid from patients"
-    c.execute(query)
-    pids = [elem[0] for elem in c.fetchall()]
-    for pid in pids:
+    for p in patients:
         try:
-            if Patient().is_sick(c, pid, aid, lab, gt_lt, value):  # O(M)
-                output.add(pid)
+            if p.is_sick(aid, lab, gt_lt, value):  # O(M)
+                output.add(p.pid)
         except AttributeError as e:
             continue
     return output
