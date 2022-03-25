@@ -4,34 +4,51 @@ Assume N patients and M labs per patient on average.
 """
 
 from datetime import datetime
-import sqlite3
 from sqlite3 import Cursor
 
 
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
-conn = sqlite3.connect("ehr.db")
-c = conn.cursor()
 
 
 class Lab:
     """Lab class that takes patient ID, admission ID, lab name, lab value, and lab date."""
 
-    __cursor = c
-
-    def __init__(self, pid: int, aid: int, name: str, value: float, date: str) -> None:
+    def __init__(
+        self, cursor: Cursor, pid: str, aid: int, name: str, value: float, date: str
+    ) -> None:
         """Initialize a lab by inserting a row into the labs table."""
         query = "insert into labs (pid, aid, name, value, date) values (?, ?, ?, ?, ?)"
+        self.__cursor = cursor
         self.__cursor.execute(query, (pid, aid, name, value, date))
+
+
+class LabError(Exception):
+    """Customized exception class raised if there is anything incorrect about labs."""
+
+    def __init__(self, *args: object) -> None:
+        """Initialize."""
+        if args:
+            self.message = args[0]
+        else:
+            self.message = None
+
+    def __str__(self) -> str:
+        """Output string."""
+        if self.message:
+            return "LabError, {0}".format(self.message)
+        else:
+            return "LabError has been raised."
 
 
 class Patient:
     """Patient class that takes patient ID, gender, DOB, and race."""
 
-    __cursor = c
-
-    def __init__(self, pid: str, gender: str, dob: datetime, race: str) -> None:
+    def __init__(
+        self, cursor: Cursor, pid: str, gender: str, dob: str, race: str
+    ) -> None:
         """Initialize a patient by inserting a row into the patients table."""
         self._pid = pid
+        self.__cursor = cursor
         query = "insert into patients (pid, gender, dob, race) values (?, ?, ?, ?)"
         self.__cursor.execute(query, (pid, gender, dob, race))
 
@@ -45,10 +62,7 @@ class Patient:
         """Get patient's dob."""
         query = f"select dob from patients where pid = '{self._pid}'"
         self.__cursor.execute(query)
-        try:
-            return datetime.strptime(c.fetchone()[0], DATE_FORMAT)
-        except TypeError as e:
-            raise ValueError(f"pid {self._pid} not found.")
+        return datetime.strptime(self.__cursor.fetchone()[0], DATE_FORMAT)
 
     @property
     def age(self) -> float:
@@ -58,13 +72,16 @@ class Patient:
         diff = now - dob
         return diff.days / 365.25
 
-    def age_at_first_admission(self, c: Cursor, pid: str) -> float:
+    @property
+    def age_at_first_admission(self) -> float:
         """Get the age at 1st admission. Time complexity O(M)."""
-        query = f"select date from labs where pid = '{pid}' and aid = 1"
-        c.execute(query)
-        lab_dates = [datetime.strptime(elem[0], DATE_FORMAT) for elem in c.fetchall()]
+        query = f"select date from labs where pid = '{self._pid}' and aid = 1"
+        self.__cursor.execute(query)
+        lab_dates = [
+            datetime.strptime(elem[0], DATE_FORMAT) for elem in self.__cursor.fetchall()
+        ]
         if len(lab_dates) == 0:
-            raise AttributeError(f"Patient {pid} has not taken any lab yet.")
+            raise LabError(f"Patient {self._pid} has not taken any lab yet.")
         min_labdate = min(lab_dates)
         dob = self.dob
         diff = min_labdate - dob
@@ -77,9 +94,9 @@ class Patient:
         """
         self.__cursor.execute(query, (self._pid, aid, lab_name))
         try:
-            lab_value = c.fetchone()[0]
-        except TypeError as e:
-            raise AttributeError(f"this patient has not taken")
+            lab_value = self.__cursor.fetchone()[0]
+        except TypeError:
+            raise LabError(f"this patient has not taken the lab.")
         if gt_lt == ">":
             return lab_value > value
         elif gt_lt == "<":
@@ -162,6 +179,6 @@ def sick_patients(
         try:
             if p.is_sick(aid, lab, gt_lt, value):  # O(M)
                 output.add(p.pid)
-        except AttributeError as e:
+        except LabError:
             continue
     return output
