@@ -1,4 +1,4 @@
-"""2022-01-28 Scott Sun.
+"""2022-01-28 Author: Scott Sun.
 
 Assume N patients and M labs per patient on average.
 """
@@ -138,16 +138,16 @@ def parse_data(filename: str) -> dict[str, list[str]]:
 
 
 def num_older_than(pateints: list[Patient], age: float) -> int:
-    """Take the data and return the number of patients older than a given age.
+    """Take a list[Patient] and return the number of patients older than a given age.
 
     Time complexity is O(N) for iterating through all patients.
 
     Parameters:
-    age (float): Age of interest
     patients (list[Patient]): List of Patient objects
+    age (float): Age of interest
 
     Returns:
-    int:number of patients that fit the condition
+    int: number of patients that fit the condition
 
     """
     count = 0
@@ -160,18 +160,18 @@ def num_older_than(pateints: list[Patient], age: float) -> int:
 def sick_patients(
     patients: list[Patient], aid: int, lab: str, gt_lt: str, value: float
 ) -> set[str]:
-    """Take the data and return a set of unique patients with the specified condition.
+    """Take a list[Patient] and return a set of unique pids with the specified condition.
 
     Time complexity is O(M*N) for iterating through all patients.
 
     Parameters:
+    patients (list[Patient]): List of Patient objects
     lab (str): Lab name
     gt_lt (str): Indicating greater-than or less-than
     value (float): Value used in the comparison
-    lab_records (dict): Parsed data
 
     Returns:
-    int:list of patient IDs
+    set[str]: Set of patient IDs
 
     """
     output: set[str] = set()
