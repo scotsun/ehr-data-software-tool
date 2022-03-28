@@ -17,44 +17,67 @@ git clone https://github.com/scotsun/EHR_data_software_tool.git
 
 Currently, the package has 2 classes and 4 module features.
 
+## Setting up SQLite DB
+```sh
+sqlite> create table if not exists patients(
+			[_pid] integer primary key autoincrement,
+			[pid] text not null unique,
+			[gender] text,
+    		[dob] text not null,
+    		[race] text
+		)
+
+sqlite> create table if not exists labs(
+		[_lid] integer primary key autoincrement,
+		[pid] integer not null,
+		[aid] integer not null,
+		[name] text not null,
+		[value] real not null,
+		[date] text not null
+	)
+
+sqlite> create index if not exists pid_index
+    	on patients (pid)
+```
+
 ### Classes
-#### `Patient`  
-it takes attrs: `pid`, `gender`, `dob`, `race`
+#### *`Patient`*  
+`insert_patient`  
+insert a row of patient into the patients table of the DB
 
 `age`  
-it is a property calculating the age of a Patient object.
+calculate the age of a Patient object.
 
 `age_at_first_admission`  
-it is a property calculating the.
+calculate the age at the first admission.
 
-`takes_lab`
-it is a class method that put a `Lab` object into `Patient._labs`.
+`is_sick`  
+check if the patient is sick based on the given criterion.
 
-`is_sick`
-it is a class method that check if the patient is sick based on the given criterion.
-
-#### `Lab`
-it takes attrs: `pid`, `aid`, `name`, `value`, `date` 
+#### *`Lab`*
+`insert_lab`  
+insert a row of lab into the labs table of the DB
 
 ### Module features
 
 `parse_data(filename: str) -> dict[str, list[str]]`:  
 it parses the data from any *.txt file with delimiter as `\t`.
 
-`num_older_than(age: float, patient_records: dict) -> int`:  
-it takes the data and return the number of patients older than a given age.
+`num_older_than(c: Cursor, age: float) -> int`:  
+it takes the sqlite cursor and return the number of patients older than a given age.
 
-`sick_patients(lab: str, gt_lt: str, value: float, lab_records: dict) -> set[str]`:  
-it takes the data and return a list of unique patients with the specified condition.
+`sick_patients(c: Cursor, aid: int, lab: str, gt_lt: str, value: float) -> set[str]`:  
+it takes the sqlite cursor and return a list of unique patients with the specified condition.
 
 
 ## Usage example
 
 ```python
+>>> import sqlite3
 >>> import ehr_analysis as ehr
->>> dat = ehr.parse('./tests/test_data3.txt')
->>> print(dat)
-{'PatientID': ['1', '1', '1', '2', '2', '3', '3', '4', '5', '5'], 'LabName': ['lab1', 'lab2', 'lab3', 'lab1', 'lab2', 'lab1', 'lab3', 'lab1', 'lab1', 'lab2'], 'LabValue': ['1', '0.5', '10', '2', '0.6', '2', '11', '3', '3', '0.9']}
+>>> conn = sqlite3.connect("ehr.db")
+>>> c = conn.cursor()
+>>> c.execute([sql_query])
 ```
 
 ## Testing
