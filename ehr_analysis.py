@@ -160,7 +160,7 @@ def num_older_than(pateints: list[Patient], age: float) -> int:
 def sick_patients(
     patients: list[Patient], aid: int, lab: str, gt_lt: str, value: float
 ) -> set[str]:
-    """Take the data and return a set of unique patients with the specified condition.
+    """Take a list[Patients] and return a set of unique patients with the specified condition.
 
     Time complexity is O(M*N) for iterating through all patients.
 
