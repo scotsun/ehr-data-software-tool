@@ -1,8 +1,8 @@
 # EHR Data Analysis Tool
 > A suite of software tools for parsing/searching/analyzing electronic health record (EHR) data
 
-[![prog-status](https://img.shields.io/badge/status-in%20progress-brightgreen?style=plastic)](https://shields.io/)
-[![made-with-python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg)](https://www.python.org/)
+[![prog-status](https://img.shields.io/badge/status-done-brightgreen?style=plastic)](https://shields.io/)
+[![made-with-python](https://img.shields.io/badge/made%20with-Python-1f425f.svg?style=plastic)](https://www.python.org/)
 
 
 ## Installation
