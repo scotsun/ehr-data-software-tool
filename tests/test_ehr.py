@@ -1,12 +1,11 @@
 """Test module."""
 
 from os import remove
-import sys
 import pytest
 import sqlite3
 from sqlite3 import IntegrityError
-import ehr_analysis as ehr
-from ehr_analysis import Patient, Lab
+import ehr.ehr_analysis as ehr
+from ehr.ehr_analysis import Patient, Lab, LabError
 
 try:
     remove("./test_ehr.db")
@@ -128,14 +127,14 @@ conn.commit()
 
 def test_parse_data():
     """Test parse_data function."""
-    data0 = {}
+    data0: dict[str, list[str]] = {}
     data1 = {
         "var0": ["0", "1"],
         "var1": ["True", "False"],
         "var2": ["False", "True"],
         "var3": ["True", "True"],
     }
-    data2 = {"var0": [], "var1": [], "var2": [], "var3": []}
+    data2: dict[str, list[str]] = {"var0": [], "var1": [], "var2": [], "var3": []}
     assert ehr.parse_data("./tests/test_data0.txt") == data0
     assert ehr.parse_data("./tests/test_data1.txt") == data1
     assert ehr.parse_data("./tests/test_data2.txt") == data2
@@ -176,7 +175,7 @@ def test_is_sick():
     with pytest.raises(ValueError) as excinfo:
         pat1.is_sick(aid=1, lab_name="lab_a", gt_lt=">=", value=0.5)
     assert "incorrect string for gt_lt" in str(excinfo.value)
-    with pytest.raises(LabError) as excinfo:
+    with pytest.raises(LabError) as excinfo:  # type: ignore
         pat99.is_sick(aid=1, lab_name="lab_z", gt_lt=">", value=100)
     assert "this patient has not taken" in str(excinfo.value)
 
