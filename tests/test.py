@@ -5,10 +5,8 @@ import sys
 import pytest
 import sqlite3
 from sqlite3 import IntegrityError
-
-sys.path.append("../ehr_data_software_tool")  # noqa: E402
 import ehr_analysis as ehr
-from ehr_analysis import *
+from ehr_analysis import Patient, Lab
 
 try:
     remove("./test_ehr.db")
