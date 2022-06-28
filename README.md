@@ -80,6 +80,11 @@ it takes the sqlite cursor and return a list of unique patients with the specifi
 >>> c.execute([sql_query])
 ```
 
+## Install package
+```python
+pip install -e .
+```
+
 ## Testing
 Several testing text files and a `test.py` script are created in test folder. To check test results, run either one of the following commands in the terminal after `cd` into the repo folder.
 
