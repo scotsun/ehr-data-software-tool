@@ -2,7 +2,7 @@
 > A suite of software tools for parsing/searching/analyzing electronic health record (EHR) data
 
 ![status](https://github.com/scotsun/ehr-data-software-tool/actions/workflows/tests.yml/badge.svg)
-[![made-with-python](https://img.shields.io/badge/made%20with-Python-1f425f.svg?style=plastic)](https://www.python.org/)
+[![made-with-python](https://img.shields.io/badge/made%20with-Python-1f425f.svg)](https://www.python.org/)
 
 
 ## Installation

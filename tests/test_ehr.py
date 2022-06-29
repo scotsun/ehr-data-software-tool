@@ -155,7 +155,7 @@ def test_unique_constraint():
 
 def test_age():
     """Test property Patient.age."""
-    assert round(pat1.age) == 74
+    assert round(pat1.age) == 75
     assert round(pat2.age) == 62
     assert round(pat3.age) == 22
 
